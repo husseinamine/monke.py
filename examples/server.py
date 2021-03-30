@@ -1,4 +1,4 @@
-from monke.server import Server
+from monke import Server
 
 s = Server()
 

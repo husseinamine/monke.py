@@ -1,4 +1,4 @@
-from monke.client import Client
+from monke import Client
 
 c = Client()
 
