@@ -17,7 +17,7 @@ class Client:
 
         for listener in self.listeners:
             if listener["event"] == req.event:
-                threading.Thread(target=listener["func"], args=(self, req.data)).start()
+                listener["func"](self, req.data)
 
 
     def __handler(self):
