@@ -1,9 +1,15 @@
-from monke.server import Server
+from server import Server
 
-server = Server("127.0.0.1", 5556)
+s = Server()
 
-def on_data(addr, socket):
-    print(addr, socket.response.data)
-    socket.emit('hello-back', 'nob')
+@s.on()
+def questianne(conn, data):
+    print(data)
+    conn.emit("how_are_you", "how are you?")
 
-server.on('hello', on_data)
+@s.on("fine_u")
+def _fine_u_handler(conn, data):
+    print(data)
+    conn.emit("fine_too", "im fine too")
+
+s.start()

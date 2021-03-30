@@ -12,5 +12,5 @@ you can emit any python datastructures too like classes, dictionaries, etc
 
 
 ## TODOS
-- [ ] `0.0.2`
+- [ ] `1.1.0`
   - [ ] add rooms

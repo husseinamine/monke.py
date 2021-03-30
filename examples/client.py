@@ -1,12 +1,16 @@
-from monke.client import Client
+from client import Client
 
-client = Client("127.0.0.1", 5556)
+c = Client()
 
-client.emit('hello', 'how are you!')
+c.emit("questianne", "why is why not why?")
 
-def handle(socket):
-    print(socket.response.data, socket.response.event)
+@c.on("how_are_you")
+def how_are_youez_handler(conn, data):
+    print(data)
+    conn.emit("fine_u", "fine how are you?")
 
-client.on('hello-back', handle)
+@c.on()
+def fine_too(conn, data):
+    print(data)
 
-#client.disconnect()
+c.start()

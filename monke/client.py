@@ -1,73 +1,70 @@
-import pickle
 import socket
 import threading
-from . import structs
+import pickle
+import common
+
+from typing import Any
 
 class Client:
-    def __init__(self, host, port):
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((host, port))
+    def __init__(self):
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.listeners = []
+        self.connected = True
 
-        self.disconnected = False
-        self.client = client
+    def __handle_req(self, data_len : int):
+        req = self.client.recv(data_len)
+        req : common.Request = pickle.loads(req)
 
-    def emit(self, event, data, force=False):
-        if event != 'system' and force == False:
-            resp_data = structs.Response()
-            resp_data.event = event 
-            resp_data.data = data
-            resp_data = pickle.dumps(resp_data)
+        for listener in self.server.listeners:
+            if listener["event"] == req.event:
+                threading.Thread(target=listener["func"], args=(self, req.data)).start()
 
-            data_len = str(len(resp_data)).encode('utf-8')
+
+    def __handler(self):
+        while self.connected:
+            try:
+                data_len = self.client.recv(64)
+
+                if data_len:
+                    data_len = int(data_len)
+
+                    self.__handle_req(data_len)
+
+            except ConnectionResetError:
+                self.connected = False
+
+        self.client.close()
+
+    def on(self, event : str = None):
+        def decorator(func):
+            event_name = event
+
+            if event_name == None:
+                event_name = func.__name__
+            
+            self.listeners.append({
+                "event": event_name,
+                "func": func
+            })
+
+        return decorator
+
+    
+    def emit(self, event : str, data : Any):
+        if event != '_SYSTEM':
+            req = common.Request()
+            req.event = event
+            req.data = data
+            req = pickle.dumps(req)
+
+            data_len = str(len(req)).encode('utf-8')
             data_len += b' ' * (64 - len(data_len))
 
-            self.client.sendall(data_len)
-            self.client.sendall(resp_data)
+            self.conn.sendall(data_len)
+            self.conn.sendall(req)
         else:
-            print('cant use event name \'system\' its reserved, use argument force=True if u want to use it')
+            raise common.RestrictedEvent('_SYSTEM')
 
-    def on(self, event, callback):
-        if not self.disconnected:   
-            listener = threading.Thread(target=self._handleConn, args=(event, callback))
-            listener.start()
-
-    def _handleConn(self, event, callback):
-        connected = True
-
-        while connected:
-            data_len = self.client.recv(64).decode('utf-8')
-            
-            if data_len:
-                data_len = int(data_len)
-                response = self.client.recv(data_len)
-                response = pickle.loads(response)
-
-                if response.event == 'system' and response.data == '!disconnect':
-                    connected = False
-
-                if response.event == event:
-                    socket = structs.Socket()
-                    
-                    socket.response = response
-                    socket.emit = self.emit
-
-                    callback(socket)
-
-        self.client.close()
-
-
-    def disconnect(self):
-        self.disconnected = True
-        
-        resp_data = structs.Response()
-        resp_data.event = 'system'
-        resp_data.data = '!disconnect'
-        resp_data = pickle.dumps(resp_data)
-
-        data_len = str(len(resp_data)).encode('utf-8')
-        data_len += b' ' * (64 - len(data_len))
-
-        self.client.sendall(data_len)
-        self.client.sendall(resp_data)
-
-        self.client.close()
+    def start(self, host : str = "127.0.0.1", port : int = 6000):
+        self.client.connect((host, port))
+        self.__handler()

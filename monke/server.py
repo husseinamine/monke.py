@@ -1,70 +1,41 @@
 import socket
 import threading
-import pickle
-import uuid
-from . import structs
+import fuid
+import connection
 
 class Server:
-    def __init__(self, host, port):
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind((host, port))
-        server.listen()
+    def __init__(self):
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connections = []
+        self.listeners = []
+        self.fuid = fuid.Generator()
 
-        self.server = server
-        self.conns = []
+    def __handler(self):
+        self.server.listen()
 
-    def on(self, event, callback):   
-        connection = threading.Thread(target=self._acceptConn, args=(event, callback))
-        connection.start()
-        
-    def _acceptConn(self, event, callback):
         while True:
-            id = str(uuid.uuid4())
-            conn, addr = self.server.accept()
+            req = self.server.accept()
 
-            self.conns.append({'object': conn, 'id': id})
+            conn = connection.Connection(*req, self.fuid.fuid(), self)
+            self.connections.append(conn)
 
-            connection = threading.Thread(target=self._handleConn, args=(conn, addr, event, callback, id))
-            connection.start()
+            threading.Thread(target=conn.start)\
+                .start()
 
-    def _handleConn(self, conn, addr, event, callback, id):
-        connected = True
+    def on(self, event : str = None):
+        def decorator(func):
+            event_name = event
 
-        while connected:
-            data_len = conn.recv(64).decode('utf-8')
+            if event_name == None:
+                event_name = func.__name__
             
-            if data_len:
-                data_len = int(data_len)
-                response = conn.recv(data_len)
-                response = pickle.loads(response)
+            self.listeners.append({
+                "event": event_name,
+                "func": func
+            })
 
-                if response.event == 'system' and response.data == '!disconnect':
-                    connected = False
+        return decorator
 
-                if response.event == event:
-                    socket = structs.Socket()
-                    
-                    socket.response = response
-                    socket.emit = lambda event, data, force=False: self._emit(id, event, data, force)
-
-                    callback(addr, socket)
-        
-        conn.close()
-
-    def _emit(self, id, event, data, force):
-        for conn in self.conns:
-            if conn['id'] == id:
-                if event != 'system' and force == False:
-                    resp_data = structs.Response()
-                    resp_data.event = event 
-                    resp_data.data = data
-                    resp_data = pickle.dumps(resp_data)
-
-                    data_len = str(len(resp_data)).encode('utf-8')
-                    data_len += b' ' * (64 - len(data_len))
-
-                    conn['object'].sendall(data_len)
-                    conn['object'].sendall(resp_data)
-                else:
-                    print('cant use event name \'system\' its reserved, use argument force=True if u want to use it')
-
+    def start(self, host : str = "127.0.0.1", port : int = 6000):
+        self.server.bind((host, port))
+        self.__handler()
