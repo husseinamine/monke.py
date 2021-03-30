@@ -60,8 +60,8 @@ class Client:
             data_len = str(len(req)).encode('utf-8')
             data_len += b' ' * (64 - len(data_len))
 
-            self.conn.sendall(data_len)
-            self.conn.sendall(req)
+            self.client.sendall(data_len)
+            self.client.sendall(req)
         else:
             raise common.RestrictedEvent('_SYSTEM')
 
