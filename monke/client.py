@@ -15,7 +15,7 @@ class Client:
         req = self.client.recv(data_len)
         req : common.Request = pickle.loads(req)
 
-        for listener in self.server.listeners:
+        for listener in self.listeners:
             if listener["event"] == req.event:
                 threading.Thread(target=listener["func"], args=(self, req.data)).start()
 
