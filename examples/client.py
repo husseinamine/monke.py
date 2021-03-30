@@ -3,8 +3,8 @@ import monke
 c = monke.client.Client()
 
 @c.on()
-def ready():
-    c.emit("questianne", "why is why not why?")
+def ready(conn, data):
+    conn.emit("questianne", "why is why not why?")
 
 @c.on("how_are_you")
 def how_are_youez_handler(conn, data):

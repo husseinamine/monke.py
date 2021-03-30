@@ -56,7 +56,7 @@ class Connection:
 
         for listener in self.server.listeners:
             if listener["event"] == req.event:
-                threading.Thread(target=listener["func"], args=(self, req.data)).start()
+                listener["func"](self, req.data)
 
         if req.event == '_SYSTEM':
             if req.data == 'disconnect':
@@ -81,7 +81,7 @@ class Connection:
         while self.connected:
             try:
                 self.emit("ready", None)
-                
+
                 data_len = self.conn.recv(64)
 
                 if data_len:
