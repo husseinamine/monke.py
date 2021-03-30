@@ -1,7 +1,7 @@
 import socket
 import threading
 import pickle
-import common
+from . import common
 
 from typing import Any
 

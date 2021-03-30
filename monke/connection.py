@@ -1,8 +1,8 @@
 import socket
 import pickle
 import threading
-import common
-import server
+from . import common
+from . import server
 
 from typing import Any
 

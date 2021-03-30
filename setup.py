@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="monke",
-    version="1.0.0",
+    version="1.0.1",
     author="Hussein Raed",
     author_email="me@husseinraed.cf",
     description="monke - event-based socket wrapper",

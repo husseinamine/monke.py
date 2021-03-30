@@ -1,7 +1,7 @@
 import socket
 import threading
 import fuid
-import connection
+from . import connection
 
 class Server:
     def __init__(self):
