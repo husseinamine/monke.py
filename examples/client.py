@@ -1,6 +1,6 @@
-from monke import Client
+import monke
 
-c = Client()
+c = monke.client.Client()
 
 c.emit("questianne", "why is why not why?")
 

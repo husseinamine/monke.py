@@ -1,6 +1,6 @@
-from monke import Server
+import monke
 
-s = Server()
+s = monke.server.Server()
 
 @s.on()
 def questianne(conn, data):
