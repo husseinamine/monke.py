@@ -78,10 +78,10 @@ class Connection:
             raise common.RestrictedEvent('_SYSTEM')
 
     def start(self):
+        self.emit("ready", None)
+        
         while self.connected:
             try:
-                self.emit("ready", None)
-
                 data_len = self.conn.recv(64)
 
                 if data_len:
