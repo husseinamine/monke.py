@@ -2,7 +2,9 @@ import monke
 
 c = monke.client.Client()
 
-c.emit("questianne", "why is why not why?")
+@c.on()
+def ready():
+    c.emit("questianne", "why is why not why?")
 
 @c.on("how_are_you")
 def how_are_youez_handler(conn, data):
