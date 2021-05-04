@@ -93,4 +93,4 @@ class Connection:
                 self.connected = False
 
         self.conn.close()
-        self.server.connections.remove(self)
+        self.server.connections.remove(self.conn)
